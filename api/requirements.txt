@@ -16,4 +16,4 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 google-generativeai==0.8.3
 motor==3.6.1
-pymongo==4.11.1
+pymongo==4.9.2
