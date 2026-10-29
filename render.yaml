@@ -1,0 +1,65 @@
+# Render Blueprint — VidAI backend + AI service
+# Deploy via Render Dashboard → New → Blueprint → pick attaquarks/VidAI.
+# Secret values are marked sync:false — Render prompts you to fill them at deploy time.
+
+services:
+  # ── Node/Express API (the backend) ────────────────────────────────
+  - type: web
+    name: vidai-api
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false          # mongodb+srv://vidai:<password>@cluster0.deecvgo.mongodb.net/vidai
+      - key: CLOUDINARY_URL
+        sync: false          # cloudinary://<key>:<secret>@dzoiomze4
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        sync: false          # https://<your-project>.vercel.app
+      - key: AI_SERVICE_URL
+        fromService:
+          type: web
+          name: vidai-ai
+          property: host     # http://vidai-ai.onrender.com
+      - key: ADMIN_EMAIL
+        value: admin@vidai.pk
+      - key: ADMIN_PASSWORD
+        sync: false
+
+  # ── Python FastAPI AI service (hosted Gemini) ─────────────────────
+  - type: web
+    name: vidai-ai
+    runtime: python
+    rootDir: ai-service
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.6
+      - key: LLM_PROVIDER
+        value: gemini
+      - key: GEMINI_MODEL
+        value: gemini-2.0-flash
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: DEBUG
+        value: "false"
+      - key: CORS_ORIGINS
+        sync: false          # https://<your-project>.vercel.app
+      - key: MONGODB_URI
+        sync: false          # same Atlas URI as vidai-api
+      - key: DB_NAME
+        value: vidai
