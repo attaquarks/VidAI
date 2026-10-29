@@ -18,11 +18,15 @@ class GeminiService:
         else:
             self.model = None
 
-    async def _generate(self, contents, generation_config=None):
+    async def _generate(self, contents, generation_config=None, system_instruction=None):
         """Run one Gemini call off the event loop. `contents` uses Gemini roles."""
         def _call():
-            model_settings = {"generation_config": generation_config} if generation_config else {}
-            model = genai.GenerativeModel(self.model_name, **model_settings)
+            kwargs = {}
+            if generation_config:
+                kwargs["generation_config"] = generation_config
+            if system_instruction:
+                kwargs["system_instruction"] = system_instruction
+            model = genai.GenerativeModel(self.model_name, **kwargs)
             return model.generate_content(contents)
         response = await asyncio.to_thread(_call)
         return response.text
@@ -44,7 +48,7 @@ class GeminiService:
         ]
         text = await self._generate(
             contents,
-            {"system_instruction": "\n\n".join(system_chunks) or None},
+            system_instruction="\n\n".join(system_chunks) or None,
         )
         return text or ""
 
@@ -66,10 +70,8 @@ class GeminiService:
         ]
         text = await self._generate(
             contents,
-            {
-                "system_instruction": "\n\n".join(system_chunks) or None,
-                "response_mime_type": "application/json",
-            },
+            {"response_mime_type": "application/json"},
+            system_instruction="\n\n".join(system_chunks) or None,
         )
         try:
             return _json.loads(text.strip())
