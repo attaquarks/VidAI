@@ -8,7 +8,6 @@ import { requireAuth, requireRole, httpError } from '../auth.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const UPLOAD_DIR = path.join(__dirname, '..', 'uploads')
-fs.mkdirSync(UPLOAD_DIR, { recursive: true })
 
 const ALLOWED = new Map([
   ['image/jpeg', 'jpg'],
@@ -27,6 +26,8 @@ if (useCloudinary) {
     cloudinary = v2
   })
   console.log('Uploads will go to Cloudinary')
+} else {
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true }) // disk path only used locally
 }
 
 function fileFilter(_req, file, cb) {
