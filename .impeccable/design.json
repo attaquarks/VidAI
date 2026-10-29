@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-27T00:00:00Z",
+  "title": "Design System: VidAI",
+  "extensions": {
+    "colorMeta": {
+      "rose": { "role": "primary", "displayName": "Rose Inlay", "canonical": "#d7385e", "tonalRamp": ["#5c0f22", "#8e1f3b", "#a92747", "#d7385e", "#ec4899", "#f9e9ed", "#fdf4f6", "#ffffff"] },
+      "gold": { "role": "secondary", "displayName": "Inlay Gold", "canonical": "#b98a2f", "tonalRamp": ["#5c430f", "#8a6420", "#b98a2f", "#d4af5c", "#ecd9ac", "#fdf3dc", "#fefaf0", "#ffffff"] },
+      "marble": { "role": "neutral", "displayName": "Marble", "canonical": "#faf9f7", "tonalRamp": ["#1f2937", "#4b5563", "#6b7280", "#92867b", "#e7e2d9", "#f3efe9", "#faf9f7", "#ffffff"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Cartouche", "purpose": "Hero and section headlines only; never UI controls." },
+      "body": { "displayName": "Operative", "purpose": "All UI text, tables, and controls." }
+    },
+    "shadows": [
+      { "name": "resting", "value": "0 1px 2px rgba(31,24,20,0.06), 0 10px 30px rgba(31,24,20,0.07)", "purpose": "Cards, tables and chat surfaces at rest." },
+      { "name": "raised", "value": "0 2px 4px rgba(31,24,20,0.08), 0 18px 50px rgba(31,24,20,0.14)", "purpose": "Hover lift, modals, hero chat preview." }
+    ],
+    "motion": [
+      { "name": "ease-out-signature", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "All state transitions and the one authored entrance." },
+      { "name": "bar-fill", "value": "width 0.9s cubic-bezier(0.16,1,0.3,1), 70ms stagger", "purpose": "Budget allocation bars draw in sequence." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "880px" },
+      { "name": "lg", "value": "960px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The rose-stone action; one per view where possible.",
+      "html": "<button class=\"ds-btn-primary\">Start planning</button>",
+      "css": ".ds-btn-primary { background: #a92747; color: #fff; border: 1px solid transparent; border-radius: 9px; padding: 0.62rem 1.2rem; font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: background 0.16s cubic-bezier(0.16,1,0.3,1); } .ds-btn-primary:hover { background: #8e1f3b; } .ds-btn-primary:focus-visible { outline: 2px solid #b98a2f; outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action on marble or panel.",
+      "html": "<button class=\"ds-btn-outline\">Open budget planner</button>",
+      "css": ".ds-btn-outline { background: transparent; color: #1f2937; border: 1px solid #e8e1d6; border-radius: 9px; padding: 0.62rem 1.2rem; font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: border-color 0.16s, color 0.16s; } .ds-btn-outline:hover { background: #ffffff; border-color: #b98a2f; color: #8a6420; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "",
+      "description": "Form field with rose focus glow.",
+      "html": "<input class=\"ds-input\" placeholder=\"you@example.com\" />",
+      "css": ".ds-input { width: 100%; border: 1px solid #e8e1d6; border-radius: 9px; padding: 0.62rem 0.85rem; font-family: 'Outfit', sans-serif; font-size: 0.95rem; background: #ffffff; color: #1f2937; transition: border-color 0.15s, box-shadow 0.15s; } .ds-input::placeholder { color: #92867b; } .ds-input:focus { outline: none; border-color: #d7385e; box-shadow: 0 0 0 3px rgba(215,56,94,0.13); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Resting surface with hairline border; hover lifts.",
+      "html": "<div class=\"ds-card\"><h3 style='margin:0 0 0.45em;font-family:Playfair Display,serif;'>Card title</h3><p style='margin:0;color:#6b7280;font-size:0.92rem;'>Supporting copy sits directly on the panel — never nested.</p></div>",
+      "css": ".ds-card { background: #ffffff; border: 1px solid #e7e2d9; border-radius: 12px; padding: 1.3rem; box-shadow: 0 1px 2px rgba(31,24,20,0.06), 0 10px 30px rgba(31,24,20,0.07); transition: box-shadow 0.2s cubic-bezier(0.16,1,0.3,1), transform 0.2s; } .ds-card:hover { box-shadow: 0 2px 4px rgba(31,24,20,0.08), 0 18px 50px rgba(31,24,20,0.14); transform: translateY(-2px); }"
+    },
+    {
+      "name": "Rose Badge",
+      "kind": "chip",
+      "refersTo": "badge-rose",
+      "description": "Status and category pill.",
+      "html": "<span class=\"ds-badge-rose\">confirmed</span>",
+      "css": ".ds-badge-rose { display: inline-flex; align-items: center; border-radius: 999px; padding: 0.14rem 0.62rem; background: #f9e9ed; color: #8e1f3b; font-family: 'Outfit', sans-serif; font-size: 0.78rem; font-weight: 500; }"
+    },
+    {
+      "name": "Jali Panel",
+      "kind": "custom",
+      "refersTo": "",
+      "description": "Stone panel with gold lattice — empty states and quiet moments.",
+      "html": "<div class=\"ds-jali\"><div style='text-align:center;padding:2rem 1.4rem;'><h3 style='margin:0 0 0.45em;font-family:Playfair Display,serif;'>No plan yet</h3><p style='margin:0;color:#6b7280;font-size:0.9rem;'>Copy sits directly on the lattice panel.</p></div></div>",
+      "css": ".ds-jali { background-color: #f3efe9; background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23b98a2f' stroke-opacity='0.22' stroke-width='1'%3E%3Cpath d='M28 6 L34 22 L50 28 L34 34 L28 50 L22 34 L6 28 L22 22 Z'/%3E%3Ccircle cx='28' cy='28' r='3.5'/%3E%3C/g%3E%3C/svg%3E\"); background-size: 56px 56px; border: 1px solid #e7e2d9; border-radius: 12px; }"
+    },
+    {
+      "name": "Budget Bar",
+      "kind": "custom",
+      "refersTo": "",
+      "description": "Hand-inked allocation bar — the signature data voice.",
+      "html": "<div class=\"ds-bar-row\"><span class=\"ds-bar-label\">Venue + catering</span><div class=\"ds-bar-track\"><div class=\"ds-bar-fill\" style=\"width:42%\"></div></div><span class=\"ds-bar-amount\">₨1,050,000</span></div>",
+      "css": ".ds-bar-row { display: grid; grid-template-columns: 170px 1fr 110px; gap: 0.9rem; align-items: center; margin-bottom: 0.85rem; font-family: 'Outfit', sans-serif; } .ds-bar-label { font-weight: 500; font-size: 0.92rem; color: #1f2937; } .ds-bar-track { height: 26px; background: #f3efe9; border-radius: 6px; overflow: hidden; } .ds-bar-fill { height: 100%; background: #a92747; border-radius: 6px; } .ds-bar-amount { text-align: right; font-variant-numeric: tabular-nums; font-size: 0.92rem; color: #4b5563; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Marble & Rose Inlay",
+    "overview": "VidAI's interface is carved like Mughal pietra dura: a calm ivory-marble ground, panels inlaid with rose stone, jali lattice screens as section dividers, and gold hairlines drawing the borders. Headlines are set in Playfair Display like engraved cartouches; everything operational is Outfit — quiet, precise, tabular where numbers mean money. The rose accent is the inlay: it marks every primary action and every number a couple cares about, and its rarity is what keeps it precious.",
+    "keyCharacteristics": [
+      "Jali lattice (authored 8-point-star SVG) as divider strips and quiet panel texture — never behind body text",
+      "Arch-topped frames for the product's signature surfaces",
+      "Gold hairline rules with a diamond center between sections",
+      "Rose #d7385e reserved for inlay accents; interactive rose is #a92747 for AA contrast",
+      "One authored motion: the hero assistant types its own exchange"
+    ],
+    "rules": [
+      { "name": "The Inlay Rule", "body": "The bright rose #d7385e never renders as body text or a fill under white body text; interactive rose is always Rose Deep #a92747.", "section": "colors" },
+      { "name": "The PKR Rule", "body": "Money is always ₨ + toLocaleString('en-PK') with tabular numerals; never a bare number.", "section": "colors" },
+      { "name": "The Lattice Rule", "body": "Jali patterns sit behind headings, empty states and side panels — never behind paragraphs a user reads.", "section": "colors" },
+      { "name": "The Cartouche Rule", "body": "Playfair Display never sets UI controls, labels, or table body text — it announces; Outfit operates.", "section": "typography" },
+      { "name": "The Tint Ladder Rule", "body": "Reach for a stone-tinted panel before a shadow; shadows respond to state, they don't fake hierarchy.", "section": "elevation" },
+      { "name": "The No-Nesting Rule", "body": "Content sits directly on tinted panels — never a white card inside a tinted card.", "section": "components" }
+    ],
+    "dos": [
+      "Do use Rose Deep (#a92747) for every interactive rose and Rose (#d7385e) only for display accents.",
+      "Do set money as ₨ + tabular numerals, always.",
+      "Do keep one authored motion per surface with cubic-bezier(0.16,1,0.3,1)."
+    ],
+    "donts": [
+      "Don't nest a white card inside a tinted/jali panel.",
+      "Don't put jali texture behind paragraphs, or Playfair on controls and labels.",
+      "Don't use progress rings, sparklines, gradient text, or icon-card grids as page structure."
+    ]
+  }
+}
