@@ -28,11 +28,19 @@ app.use((req, res, next) => {
   next()
 })
 
-// CORS for dev (vite :3000) and any configured client origin
+// CORS for dev (vite :3000), any configured client origin, and same-origin
+// (backend + frontend on one Vercel domain need no configuration)
 const origins = (process.env.CLIENT_URL || 'http://localhost:3000').split(',')
 app.use((req, res, next) => {
   const origin = req.headers.origin
-  if (origin && origins.includes(origin.trim())) {
+  const sameOrigin = (() => {
+    try {
+      return origin && new URL(origin).host === req.headers.host
+    } catch {
+      return false
+    }
+  })()
+  if (origin && (origins.includes(origin.trim()) || sameOrigin)) {
     res.setHeader('Access-Control-Allow-Origin', origin)
     res.setHeader('Access-Control-Allow-Credentials', 'true')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
@@ -72,16 +80,26 @@ app.use((err, req, res, _next) => {
 })
 
 const PORT = process.env.PORT || 5000
-connectDB()
-  .then(async () => {
-    await seedAdmin()
-    app.listen(PORT, () =>
-      console.log(
-        `VidAI Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`
+
+if (process.env.VERCEL) {
+  // Serverless: Vercel owns the HTTP listener; we only need DB + app handler.
+  connectDB()
+    .then(() => seedAdmin())
+    .catch((err) => console.error('Failed to connect to MongoDB:', err.message))
+} else {
+  connectDB()
+    .then(async () => {
+      await seedAdmin()
+      app.listen(PORT, () =>
+        console.log(
+          `VidAI Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`
+        )
       )
-    )
-  })
-  .catch((err) => {
-    console.error('Failed to connect to MongoDB:', err.message)
-    process.exit(1)
-  })
+    })
+    .catch((err) => {
+      console.error('Failed to connect to MongoDB:', err.message)
+      process.exit(1)
+    })
+}
+
+export default app

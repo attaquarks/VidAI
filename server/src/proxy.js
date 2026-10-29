@@ -1,8 +1,9 @@
 import { httpError } from './auth.js'
 
 // Forward a JSON POST to the Python AI service, passing its response back.
-export async function proxyAI(path, body, timeoutMs = 320_000) {
-  const base = process.env.AI_SERVICE_URL || 'http://localhost:8000'
+export async function proxyAI(path, body, timeoutMs = 320_000, baseOverride) {
+  const base =
+    baseOverride || process.env.AI_SERVICE_URL || 'http://localhost:8000'
   let res
   try {
     res = await fetch(`${base}${path}`, {
