@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "VidAI",
+    "slug": "vidai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "pk.vidai.app",
+      "usesCleartextTraffic": true,
+      "adaptiveIcon": {
+        "backgroundColor": "#a92747",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "apiUrl": "https://vidai-lime.vercel.app/api/v1",
+      "eas": {
+        "projectId": "94a785ff-531a-4736-9cb4-8c75de6f1a3a"
+      }
+    }
+  }
+}
