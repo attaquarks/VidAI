@@ -22,18 +22,21 @@ export default function AdminSystem() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
-  async function load() {
+  async function refresh() {
     setBusy(true)
     try {
       const { data } = await api.get('/admin/system-health')
       setHealth(data.data)
+      setError('')
     } catch (e) {
       setError(errMessage(e))
-    } finally {
-      setBusy(false)
-    }
+    } finally { setBusy(false) }
   }
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    api.get('/admin/system-health')
+      .then(({ data }) => setHealth(data.data))
+      .catch((e) => setError(errMessage(e)))
+  }, [])
 
   if (error) return <div className="form-error">{error}</div>
   if (!health) return <PageLoading />
@@ -44,7 +47,7 @@ export default function AdminSystem() {
     <div className="stack">
       <div className="page-title">
         <h1>System health</h1>
-        <button className="btn btn-outline btn-sm" onClick={load} disabled={busy}>
+        <button className="btn btn-outline btn-sm" onClick={refresh} disabled={busy}>
           <RefreshCw size={14} className={busy ? 'spin-icon' : ''} /> Refresh
         </button>
       </div>

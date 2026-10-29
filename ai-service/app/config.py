@@ -21,7 +21,11 @@ class Settings:
     OLLAMA_TIMEOUT: int = int(os.getenv("OLLAMA_TIMEOUT", "60"))
 
     GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
-    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+    # Which engine answers chat/recommendations/budget-plan:
+    # "gemini" = hosted (production), "ollama" = local model (development).
+    # Invitations always use Gemini, regardless of this setting.
+    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "ollama").lower()
 
     MONGODB_URI: str = os.getenv("MONGODB_URI", "mongodb://localhost:27017/vidai")
     DB_NAME: str = os.getenv("DB_NAME", "vidai")

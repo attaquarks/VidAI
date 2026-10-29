@@ -11,11 +11,71 @@ logger = logging.getLogger("vidai.gemini")
 
 class GeminiService:
     def __init__(self):
+        self.model_name = settings.GEMINI_MODEL
         if settings.GOOGLE_API_KEY:
             genai.configure(api_key=settings.GOOGLE_API_KEY)
-            self.model = genai.GenerativeModel(settings.GEMINI_MODEL)
+            self.model = genai.GenerativeModel(self.model_name)
         else:
             self.model = None
+
+    async def _generate(self, contents, generation_config=None):
+        """Run one Gemini call off the event loop. `contents` uses Gemini roles."""
+        def _call():
+            model_settings = {"generation_config": generation_config} if generation_config else {}
+            model = genai.GenerativeModel(self.model_name, **model_settings)
+            return model.generate_content(contents)
+        response = await asyncio.to_thread(_call)
+        return response.text
+
+    async def chat(self, messages: list[dict]) -> str:
+        """
+        Hosted chat completion. `messages` is the Ollama-shaped array the
+        prompt builders produce: [{role: system|user|assistant, content}].
+        Raises RuntimeError when no API key is configured so the caller can
+        fall back to Ollama.
+        """
+        if not self.model:
+            raise RuntimeError("GOOGLE_API_KEY is not configured")
+        system_chunks = [m["content"] for m in messages if m.get("role") == "system"]
+        contents = [
+            {"role": "model" if m.get("role") == "assistant" else "user", "parts": [m["content"]]}
+            for m in messages
+            if m.get("role") != "system"
+        ]
+        text = await self._generate(
+            contents,
+            {"system_instruction": "\n\n".join(system_chunks) or None},
+        )
+        return text or ""
+
+    async def generate_json(self, messages: list[dict]) -> dict:
+        """
+        Hosted structured output. Same contract as OllamaService.generate_json:
+        returns a parsed dict or raises ValueError (handled as a fallback
+        trigger by the routers).
+        """
+        import json as _json
+
+        if not self.model:
+            raise RuntimeError("GOOGLE_API_KEY is not configured")
+        system_chunks = [m["content"] for m in messages if m.get("role") == "system"]
+        contents = [
+            {"role": "model" if m.get("role") == "assistant" else "user", "parts": [m["content"]]}
+            for m in messages
+            if m.get("role") != "system"
+        ]
+        text = await self._generate(
+            contents,
+            {
+                "system_instruction": "\n\n".join(system_chunks) or None,
+                "response_mime_type": "application/json",
+            },
+        )
+        try:
+            return _json.loads(text.strip())
+        except _json.JSONDecodeError as e:
+            logger.error("Gemini returned invalid JSON: %s\nRaw: %s", e, (text or "")[:300])
+            raise ValueError("Gemini returned invalid JSON") from e
 
     async def generate_invitation_content(self, essentials: dict, style: dict, tone: str):
         if not self.model:

@@ -12,6 +12,7 @@ import json
 from fastapi import APIRouter, HTTPException
 import httpx
 
+from app.config import settings
 from app.models.schemas import (
     BudgetAllocation,
     BudgetPlanRequest,
@@ -27,6 +28,7 @@ from app.models.schemas import (
     RecommendationResponseData,
 )
 from app.services.ollama_service import ollama_service
+from app.services.gemini_service import gemini_service
 from app.services.database import db_client
 from app.services.prompts import (
     build_budget_prompt,
@@ -47,6 +49,16 @@ async def _vendors_context() -> str:
     except Exception as e:
         logger.error("Failed to fetch vendors context: %r", e)
         return ""
+
+
+def _llm():
+    """
+    The engine that answers chat/recommendations/budget-plan: Gemini when
+    configured for cloud use, Ollama otherwise. Invitations always use Gemini.
+    """
+    if settings.LLM_PROVIDER == "gemini" and gemini_service.model:
+        return gemini_service
+    return ollama_service
 
 
 def _unavailable(exc: Exception) -> HTTPException:
@@ -78,7 +90,7 @@ async def chat_with_ai(request: ChatRequest):
             vendors_context=await _vendors_context(),
         )
 
-        ai_reply = await ollama_service.chat(messages)
+        ai_reply = await _llm().chat(messages)
 
         updated_history = list(request.conversationHistory) + [
             ChatMessage(role="user", content=request.message),
@@ -114,7 +126,7 @@ async def get_recommendations(request: RecommendationRequest):
             vendors_context=await _vendors_context(),
         )
 
-        result = await ollama_service.generate_json(messages)
+        result = await _llm().generate_json(messages)
 
         recommendations = [
             RecommendationItem(
@@ -181,7 +193,7 @@ async def get_budget_plan(request: BudgetPlanRequest):
             vendors_context=await _vendors_context(),
         )
 
-        result = await ollama_service.generate_json(messages)
+        result = await _llm().generate_json(messages)
 
         raw_allocations = result.get("allocations", [])
         allocations = []

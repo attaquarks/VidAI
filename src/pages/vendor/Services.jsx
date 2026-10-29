@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
-import api, { errMessage } from '../../api.js'
+import api, { assetUrl, errMessage } from '../../api.js'
 import { PageLoading, EmptyState, Badge, Modal, SubmitButton } from '../../components/ui.jsx'
 import { fmtPKR, VENDOR_CATEGORIES, categoryLabel } from '../../constants.js'
 
@@ -21,7 +21,11 @@ export default function VendorServices() {
       setError(errMessage(e))
     }
   }
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    api.get('/vendors/me/packages')
+      .then(({ data }) => setPackages(data.data))
+      .catch((e) => setError(errMessage(e)))
+  }, [])
 
   async function save(e) {
     e.preventDefault()
@@ -149,6 +153,40 @@ export default function VendorServices() {
               <textarea id="pdesc" className="textarea" value={editing.description || ''}
                 onChange={(e) => setEditing({ ...editing, description: e.target.value })}
                 placeholder="Two shooters, 8 hours, same-week edit…" />
+            </div>
+            <div className="field">
+              <label htmlFor="pimages">Images</label>
+              <input
+                id="pimages" type="file" accept="image/jpeg,image/png,image/webp" multiple
+                className="input" style={{ padding: '0.4rem' }}
+                onChange={async (e) => {
+                  if (!e.target.files?.length) return
+                  const fd = new FormData()
+                  Array.from(e.target.files).forEach((f) => fd.append('images', f))
+                  try {
+                    const { data } = await api.post('/upload/images', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+                    setEditing((cur) => ({ ...cur, images: [...(cur.images || []), ...data.urls] }))
+                    toast.success(`${data.urls.length} image${data.urls.length > 1 ? 's' : ''} uploaded`)
+                  } catch (err) {
+                    toast.error(errMessage(err))
+                  }
+                  e.target.value = ''
+                }}
+              />
+              {editing.images?.length > 0 && (
+                <div className="row" style={{ flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  {editing.images.map((url) => (
+                    <span key={url} style={{ position: 'relative', display: 'inline-block' }}>
+                      <img src={assetUrl(url)} alt="" style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--line)' }} />
+                      <button
+                        type="button" aria-label="Remove image"
+                        onClick={() => setEditing((cur) => ({ ...cur, images: cur.images.filter((u) => u !== url) }))}
+                        className="btn btn-danger btn-sm" style={{ position: 'absolute', top: -8, right: -8, padding: '0 6px' }}
+                      >✕</button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="row" style={{ justifyContent: 'end' }}>
               <button type="button" className="btn btn-ghost" onClick={() => setEditing(null)}>Cancel</button>
