@@ -21,7 +21,7 @@ class Settings:
     OLLAMA_TIMEOUT: int = int(os.getenv("OLLAMA_TIMEOUT", "60"))
 
     GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
-    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     # Which engine answers chat/recommendations/budget-plan:
     # "gemini" = hosted (production), "ollama" = local model (development).
     # Invitations always use Gemini, regardless of this setting.

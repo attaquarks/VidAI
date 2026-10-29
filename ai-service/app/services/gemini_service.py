@@ -2,7 +2,8 @@ import asyncio
 import json
 import logging
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 from app.config import settings
 
@@ -13,21 +14,23 @@ class GeminiService:
     def __init__(self):
         self.model_name = settings.GEMINI_MODEL
         if settings.GOOGLE_API_KEY:
-            genai.configure(api_key=settings.GOOGLE_API_KEY)
-            self.model = genai.GenerativeModel(self.model_name)
+            self.client = genai.Client(api_key=settings.GOOGLE_API_KEY)
         else:
-            self.model = None
+            self.client = None
 
-    async def _generate(self, contents, generation_config=None, system_instruction=None):
-        """Run one Gemini call off the event loop. `contents` uses Gemini roles."""
+    async def _generate(self, contents, system_instruction=None, json_mode=False):
+        """Run one Gemini call off the event loop."""
         def _call():
-            kwargs = {}
-            if generation_config:
-                kwargs["generation_config"] = generation_config
-            if system_instruction:
-                kwargs["system_instruction"] = system_instruction
-            model = genai.GenerativeModel(self.model_name, **kwargs)
-            return model.generate_content(contents)
+            config = types.GenerateContentConfig(
+                system_instruction=system_instruction,
+                response_mime_type="application/json" if json_mode else None,
+            )
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=contents,
+                config=config,
+            )
+            return response
         response = await asyncio.to_thread(_call)
         return response.text
 
@@ -38,11 +41,14 @@ class GeminiService:
         Raises RuntimeError when no API key is configured so the caller can
         fall back to Ollama.
         """
-        if not self.model:
+        if not self.client:
             raise RuntimeError("GOOGLE_API_KEY is not configured")
         system_chunks = [m["content"] for m in messages if m.get("role") == "system"]
         contents = [
-            {"role": "model" if m.get("role") == "assistant" else "user", "parts": [m["content"]]}
+            types.Content(
+                role="model" if m.get("role") == "assistant" else "user",
+                parts=[types.Part(text=m["content"])],
+            )
             for m in messages
             if m.get("role") != "system"
         ]
@@ -60,18 +66,21 @@ class GeminiService:
         """
         import json as _json
 
-        if not self.model:
+        if not self.client:
             raise RuntimeError("GOOGLE_API_KEY is not configured")
         system_chunks = [m["content"] for m in messages if m.get("role") == "system"]
         contents = [
-            {"role": "model" if m.get("role") == "assistant" else "user", "parts": [m["content"]]}
+            types.Content(
+                role="model" if m.get("role") == "assistant" else "user",
+                parts=[types.Part(text=m["content"])],
+            )
             for m in messages
             if m.get("role") != "system"
         ]
         text = await self._generate(
             contents,
-            {"response_mime_type": "application/json"},
             system_instruction="\n\n".join(system_chunks) or None,
+            json_mode=True,
         )
         try:
             return _json.loads(text.strip())
@@ -80,7 +89,7 @@ class GeminiService:
             raise ValueError("Gemini returned invalid JSON") from e
 
     async def generate_invitation_content(self, essentials: dict, style: dict, tone: str):
-        if not self.model:
+        if not self.client:
             return self._fallback(essentials)
 
         prompt = f"""
@@ -112,15 +121,11 @@ class GeminiService:
         """
 
         try:
-            # The google-generativeai SDK is synchronous — keep it off the event loop
-            response = await asyncio.to_thread(self.model.generate_content, prompt)
-            text = response.text
-            if "```json" in text:
-                text = text.split("```json")[1].split("```")[0].strip()
-            elif "{" in text:
-                text = text[text.find("{"):text.rfind("}") + 1]
-
-            return json.loads(text)
+            # The Google SDK is synchronous — keep it off the event loop
+            result = await self.generate_json(
+                [{"role": "user", "content": prompt}]
+            )
+            return result
         except Exception as e:
             logger.warning("Gemini generation failed, using fallback: %s", e)
             return self._fallback(essentials)

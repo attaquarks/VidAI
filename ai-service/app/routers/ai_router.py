@@ -56,7 +56,7 @@ def _llm():
     The engine that answers chat/recommendations/budget-plan: Gemini when
     configured for cloud use, Ollama otherwise. Invitations always use Gemini.
     """
-    if settings.LLM_PROVIDER == "gemini" and gemini_service.model:
+    if settings.LLM_PROVIDER == "gemini" and gemini_service.client:
         return gemini_service
     return ollama_service
 
